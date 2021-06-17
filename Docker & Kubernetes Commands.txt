@@ -596,3 +596,41 @@ kubectl autoscale deployment <deployment-name> --min=0 --max=0 --cpu-percent=00
 
 kubectl autoscale deployment tomcat --min=2 --max=4 --cpu-percent=80
 kubectl get hpa
+
+secret creation using cli
+
+kubectl create secret generic tom2-secrets --from-file=username=uname.txt --from-file=password=pass.txt
+kubectl describe secret tom2-secrets
+kubectl get secrets
+kubectl create -f podsec_test.yml
+--------------------------
+
+secret creation using yaml file
+echo -n 'admin2' | base64
+YWRtaW4y
+
+echo -n 'test1234$' | base64
+dGVzdDEyMzQk
+
+kubectl create -f secretcreation.yml
+kubectl describe secret tom2-secrets
+kubectl get secrets
+kubectl create -f podsec_test.yml
+------------------
+
+
+configmap
+
+kubectl get cm
+kubectl create -f tomcatcm.yml
+kubectl create -f tome.yml
+
+to test the config map, get into pod check for env
+
+
+kubectl exec -it <podname> /bin/bash
+
+env
+---------------------------------------------------------------
+
+
