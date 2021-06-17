@@ -590,3 +590,9 @@ kubectl rollout history deploy/tomcat
 kubectl rollout undo deploy/tomcat --to-revision=1
 kubectl get deploy
 kubectl get pods
+kubectl autoscale deployment <deployment-name> --min=0 --max=0 --cpu-percent=00
+
+
+
+kubectl autoscale deployment tomcat --min=2 --max=4 --cpu-percent=80
+kubectl get hpa
