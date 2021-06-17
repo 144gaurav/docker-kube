@@ -632,5 +632,14 @@ kubectl exec -it <podname> /bin/bash
 
 env
 ---------------------------------------------------------------
+kubectl create -f rawurl (.json file)
 
+getting into the pod
+kubectl exec -it <podname> sh
+kubectl exec -it tomcat-nginx sh
 
+kubectl exec -it <podname> -c <containername> sh
+kubectl exec -it tomcat-nginx -c nginx sh
+
+github for practise
+https://github.com/devopsmiddleware1/kubernetes_ingress_example
