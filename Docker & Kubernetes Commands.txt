@@ -1,0 +1,592 @@
+https://drive.google.com/drive/folders/1QVeGzy2Z70DUAWLXpL6DOjD4xwDYl1lf?usp=sharing
+
+Mputty DOwnload links:
+
+
+https://ttyplus.com/download/mtputty_setup.exe
+
+
+
+
+--------------------
+Steps to install Docker CE:
+
+Step-1:
+
+Linux pre-req for docker installation
+
+yum install yum-utils device-mapper-persistent-data lvm2
+
+Step-2:
+adding the docke repo to linux 
+
+ yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+
+
+
+
+Step-3: installing the docker
+
+yum install docker-ce
+
+Step-4:
+
+systemctl start docker
+systemctl status docker
+systemctl enable docker
+docker -v
+
+
+
+docker info
+
+docker images
+docker pull <imagename>
+
+docker run --name <containername>   -p <hostport>:<containerport> <imagename>
+
+docker run --name tomcatc1  -p 8082:8080 tomcat
+
+docker run --name tomcatc2  -p 8083:8080 tomcat
+
+
+docker ps  ---list the running container
+
+docker ps -a ----------list all containers(both running/offline)
+
+
+to check ipaddress of the container:
+
+
+docker inspect <containername> | grep IPA
+
+or
+docker inspect <container-id> | grep IPA
+
+--------------------------------
+
+
+
+
+Lab1- Docker file
+
+Docker Commands
+
+Step-1:
+
+vi Dockerfile
+
+FROM centos:latest
+MAINTAINER admin
+RUN yum install -y httpd
+COPY index.html /var/www/html/
+EXPOSE 80
+CMD ["/usr/sbin/httpd","-D","FOREGROUND"]
+
+
+
+Esc : wq
+
+Step-2: creae a index.html file
+
+vi index.html
+
+<html>
+<body bgcolor="pink">
+<h2>Welcome to India! </h2>
+</body>
+</html>
+
+Esc : wq
+
+step-3:  using docker build command, we need to create a custom image
+
+Syntax:  docker build -t <imagename> .
+
+docker build -t mycentos .
+
+Step-4:  start the container using this custom images
+
+docker run -d --name <containername> <imagename>
+
+docker run -d --name myapachec1 mycentos
+
+
+
+--------------------------------
+
+Building/Deploying Java Webapplication using tomcat from Github to docker
+
+
+Step-1:
+
+mkdir -p /opt/dockerlabs/
+
+git clone https://github.com/devopstraining4/tomcatsupermarket.git
+
+
+Step-2:
+
+docker build -t mytomcatapp .
+
+step-3:
+
+docker run -d  -p 8082:8080 --name supermarketc1 mytomcatapp
+
+Step-4:
+
+to access the app using linux host ip from windows browser
+
+http://192.168.221.128:8082/supermarket/
+
+to access using container ip with port
+
+http://172.17.0.2:8080/supermarket/
+
+
+docker inspect containername| grep IPA
+
+
+
+Step-5:
+
+to get into the container filesystem
+
+docker exec -it <containername> /bin/bash
+
+
+Step-6:
+
+docker commit <containername-running> <new image name>
+
+docker commit supermarketapp1 supermarketapp
+
+Step-7:
+
+docker save <imagename> > fileanme.tar
+
+docker save supermarketapp > supermarketapp.tar
+
+
+Step-8:
+
+(before loading, for testing purpose delete the previous images)
+docker load -i filename.tar
+
+docker load -i supermarketapp.tar
+
+Step-9:
+
+docker run -d --name c1 supermarketapp
+
+
+----------------------------------------------------------------------------------------
+docker pull jenkins/jenkins
+Volume Labs
+
+
+docker volume ls
+
+docker volume create myvolume1
+
+
+docker volume inspect myvolume1
+
+docker run --name myjenkinsc1 -v myvolume1:/var/jenkins_home -p 8081:8080 -p 50000:50000 jenkins/jenkins
+
+docker logs <container name>
+docker logs myjenkinsc1
+
+
+starting new Container to check volume data
+
+docker run --name myjenkinsc2 -v myvolume1:/var/jenkins_home -p 8082:8080 -p 49000:50000 jenkins/jenkins
+
+docker volume rm myvolume1
+
+---------------------------
+
+Docker bindmount
+
+
+
+mkdir -p /opt/jenkinsbm
+
+docker run -u root --name myjenkinsbmc1 -v /opt/jenkinsbm:/var/jenkins_home -p 8082:8080 -p 49000:50000 jenkins/jenkins
+
+----------------------------
+
+
+portainer for docker management ui
+
+
+docker pull portainer/portainer
+
+docker run -d -p 9000:9000 -v /var/run/docker.sock:/var/run/docker.sock portainer/portainer
+
+
+http://linuip:9000
+
+--------------------------------------------
+
+
+DOcker networking
+
+
+docker network ls
+docker network inspect bridge
+docker inspect <containername> | grep IPA
+
+docker network create mynetwork1
+docker network inspect mynetwork1
+docker network ls
+
+
+
+docker run -it --name centosc1 centos
+docker commit centosc1 centoswithnetwork
+
+docker run -it --name mycontainern1 --network mynetwork1 centoswithnetwork /bin/bash
+docker run --name myjenkinsc3 -v myvolume1:/var/jenkins_home -p 8082:8080 -p 49000:50000   --network mynetwork1 jenkins/jenkins
+
+
+
+assigning subnet to docker network:
+
+docker network create mynetwork2 --driver overlay --subnet 10.0.9.8/24
+
+------------------------------------------------------------------------------
+
+
+
+---------------------------------
+Installation of Compose
+
+
+
+Step-1:    curl -L https://github.com/docker/compose/releases/download/1.28.5/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+
+Step-2:  chmod +x /usr/local/bin/docker-compose
+
+Step-3: docker-compose --version
+
+curl -L https://github.com/docker/compose/releases/download/1.28.5/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+1.28.5
+
+------------------------------------------------------------------------------------
+ cat docker-compose.yaml
+version: '3.8'
+services:
+   webservers:
+      image: nginx
+      ports:
+      - 8089:80/tcp
+
+   databaseservers:
+     image: redis
+     ports:
+     - 6379:6379/tcp
+
+
+docker-compose config
+
+docker-compose up -d
+docker-compose ps
+
+docker pull bitnami/rabbitmq
+5672
+
+jboss/wildfly
+9990:9990
+
+
+-----------------------------------------------------------
+
+Kubernetes Commands
+
+kubectl get pods --all-namespaces
+
+
+kubectl run <podname> --image= imagename --port=no  --generator=run-pod/v1
+
+kubectl run mynginx1 --image=nginx --port=80 --generator=run-pod/v1
+-----------------
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: tomcat
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: webserver
+    spec:
+      containers:
+      - name: tomcat
+        image: middlewaredevops4/tomcatimagewithapp
+        ports:
+        - containerPort: 8080
+        env:
+        - name: APP_VERSION
+          value: "1.0"
+
+--------------------------
+apiVersion: v1
+kind: Pod
+metadata:
+  name: indiapod1
+  labels:
+    name: mynginxserver
+spec:
+  containers:
+     - name: indiapod1
+       image: nginx
+       ports:
+         - containerPort: 80
+
+
+------------------------
+
+ kubectl logs podname
+
+-----------------------------
+
+
+docker pull middlewaredevops4/tomcatimagewithapp
+
+
+RC
+
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: rctomcat
+spec:
+  replicas: 1
+  selector:
+    app: mytomcatserver
+	env: preprodserver
+ template:
+    metadata:
+      name: tomcat
+      labels:
+        app: mytomcatserver
+		env: preprodserver
+    spec:
+      containers:
+        - name: rctomcat
+          image: middlewaredevops4/tomcatimagewithapp
+          ports:
+            - containerPort: 8080
+
+
+
+kubectl get rc
+ kubectl get pods
+ kubectl scale replicationcontroller rctomcat --replicas=1
+  kubectl delete pod <podname>
+kubectl logs <podname>
+  
+
+https://github.com/devopsmiddleware1/klabs.git
+
+
+kubectl create -f 
+
+
+--------------------
+
+namespace example
+
+
+
+kubectl get ns
+kubectl create namespace flipkartproject
+ kubectl get ns
+ kubectl run flipkartpod --image=middlewaredevops4/tomcatimagewithapp --port=8080 -n flipkartproject
+ kubectl get pods
+ kubectl get pods --namespace flipkartproject
+
+
+----------------------------------------
+
+--- 
+apiVersion: v1
+kind: Service
+metadata: 
+  name: jbossservice
+spec: 
+  ports: 
+    - 
+      port: 8081
+      targetPort: 8080
+  selector: 
+    env: jbossserverprod
+
+kubectl create -f <yamlfilename>
+
+apiVersion: v1
+kind: Pod
+metadata: 
+  labels: 
+    env: jbossserverprod
+  name: jbosspod
+spec: 
+  containers: 
+    - 
+      image: tutum/jboss
+      name: jbosspod
+      ports: 
+        - 
+          containerPort: 8080
+
+kubectl create -f <yamlfilename>
+
+
+---------------------------------------------------
+
+
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.2.0/aio/deploy/recommended.yaml
+
+
+
+ ---------------------------------------------------------------------------
+
+
+kubectl exec -it jbosspod /bin/bash
+
+ ---------------------------------------------------------------------------
+
+Volumes
+
+
+--- 
+apiVersion: v1
+kind: Pod
+metadata: 
+  name: mynginxpod
+spec: 
+  containers: 
+    - 
+      image: nginx
+      name: wsserver
+      ports: 
+        - 
+          containerPort: 80
+      volumeMounts: 
+        - 
+          mountPath: /usr/share/nginx/html
+          name: nginxpersistentstorage
+  volumes: 
+    - 
+      name: nginxpersistentstorage
+      persistentVolumeClaim: 
+        claimName: pvc1
+
+
+--- 
+apiVersion: v1
+kind: PersistentVolume
+metadata: 
+  name: pv1
+spec:
+  capacity:
+    storage: 1Gi 
+  accessModes: 
+    - ReadWriteMany
+  hostPath: 
+    path: /opt/myvolume1
+
+
+  
+--- 
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata: 
+  name: pvc1
+spec: 
+  accessModes: 
+    - ReadWriteMany
+  resources: 
+    requests: 
+      storage: 1Gi
+
+ ---------------------------------------------------------------------------
+
+Service Example
+
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: jbosspod
+  labels:
+    env: jbossserverprod
+spec:
+  containers:
+    - name: jbosspod
+      image: tutum/jboss
+      ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jbossservice
+spec:
+  externalIPs: 
+    - "192.168.221.129"
+  ports:
+    - port: 8081
+	  targetPort: 8080
+  selector:
+     env: jbossserverprod
+
+
+ ---------------------------------------------------------------------------
+
+Deployment 
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tomcat
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: webserver
+  template:
+    metadata:
+      labels:
+        app: webserver
+    spec:
+      containers:
+      - name: tomcat
+        image: middlewaredevops4/tomcatimagewithapp
+        ports:
+        - containerPort: 8080
+        env:
+        - name: APP_VERSION
+          value: "1.0"
+
+
+HPA
+
+
+kubectl autoscale deployment tomcat 
+
+------------------------------------
+
+Deployment commands
+
+
+kubectl create -f deployment1.yml
+kubectl get rs => to get the replica set
+kubectl rollout status deploy/tomcat
+kubectl rollout history deploy/tomcat
+kubectl rollout undo deploy/tomcat --to-revision=1
+kubectl get deploy
+kubectl get pods
